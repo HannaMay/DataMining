@@ -1,7 +1,10 @@
 import re
+import operator
+from collections import defaultdict
 from urllib.parse import urlsplit, urljoin
 
 import requests
+from matplotlib import pyplot as plt
 from bs4 import BeautifulSoup, Tag
 
 URLS = set()
@@ -59,6 +62,29 @@ def get_words_list(texts):
     return words
 
 
+def get_words_frequency(words):
+    frequency = defaultdict(int)
+    for word in words:
+        frequency[word] += 1
+    return frequency
+
+
+def get_words_length_frequency(words):
+    frequency = defaultdict(int)
+    for word in words:
+        frequency[len(word)] += 1
+    return frequency
+
+
+def make_histogram(frequency):
+    frequency = sorted(frequency.items(), key=operator.itemgetter(1))
+    keys = [item[0] for item in frequency]
+    values = [item[1] for item in frequency]
+    plt.xticks(rotation=-90)
+    plt.bar(keys, values, color='darkgreen', alpha=0.85)
+    plt.show()
+
+
 def get_statistics(soup, urls):
     statistics = {'urls': len(urls)}
     imgs = get_images(soup)
@@ -75,6 +101,11 @@ def get_statistics(soup, urls):
     words = get_words_list(texts)
     statistics['words_count'] = len(words)
 
+    words_frequency = get_words_frequency(words)
+    make_histogram(words_frequency)
+
+    words_length_frequency = get_words_length_frequency(words)
+    make_histogram(words_length_frequency)
     return statistics
 
 
@@ -95,7 +126,7 @@ def parse(url, depth, base):
 
 
 def main():
-    url = ('https://google.com')
+    url = ('https://ru.wikipedia.org/wiki/%D0%97%D0%B0%D0%B3%D0%BB%D0%B0%D0%B2%D0%BD%D0%B0%D1%8F_%D1%81%D1%82%D1%80%D0%B0%D0%BD%D0%B8%D1%86%D0%B0')
     base = urlsplit(url).hostname
     parse(url, depth=1, base=base)
 
